@@ -284,12 +284,26 @@
         Mensaje
     </div>
 
-    <script>
-        let events = JSON.parse(localStorage.getItem('cal_events')) || [];
-        let contacts = JSON.parse(localStorage.getItem('cal_contacts')) || [];
-        let holidays = JSON.parse(localStorage.getItem('cal_holidays')) || [];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXoUasAjktafYh3-YYcMup9Lk_obuxcL4",
+            authDomain: "calendariomast.firebaseapp.com",
+            projectId: "calendariomast",
+            storageBucket: "calendariomast.firebasestorage.app",
+            messagingSenderId: "741089042598",
+            appId: "1:741089042598:web:8b8e01fc830eccc4c4d467"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let events = [];
+        let contacts = [];
+        let holidays = [];
         
-        let settings = JSON.parse(localStorage.getItem('cal_settings')) || {
+        let settings = {
             darkMode: false,
             bgUrl: '',
             opacity: 95,
@@ -311,7 +325,20 @@
         let actionEventId = null;
         let selectedDateForAction = null;
 
-        window.onload = () => {
+        window.onload = async () => {
+            try {
+                const docRef = doc(db, 'app_data', 'main');
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.events) events = data.events;
+                    if (data.contacts) contacts = data.contacts;
+                    if (data.holidays) holidays = data.holidays;
+                    if (data.settings) settings = data.settings;
+                }
+            } catch (error) {
+                console.error("Error cargando de Firebase:", error);
+            }
             populateTimeSelects();
             applySettings();
             generateSlots();
@@ -335,10 +362,11 @@
             });
         }
 
-        function saveState() {
-            localStorage.setItem('cal_events', JSON.stringify(events));
-            localStorage.setItem('cal_contacts', JSON.stringify(contacts));
-            localStorage.setItem('cal_holidays', JSON.stringify(holidays));
+        async function saveState() {
+            try {
+                const docRef = doc(db, 'app_data', 'main');
+                await setDoc(docRef, { events, contacts, holidays, settings }, { merge: true });
+            } catch(e) { console.error("Error guardando state", e); }
         }
 
         // --- STREAMING_CHUNK:Utilities ---
@@ -969,19 +997,30 @@
             }
         }
 
-        function finalizeSave() {
-            localStorage.setItem('cal_settings', JSON.stringify(settings));
+        async function finalizeSave() {
+            try {
+                const docRef = doc(db, 'app_data', 'main');
+                await setDoc(docRef, { events, contacts, holidays, settings }, { merge: true });
+            } catch(e) { console.error("Error guardando settings", e); }
+            
             applySettings();
             generateSlots();
             renderCalendar();
             closeModal('settings-modal');
-            showToast('Ajustes guardados. Interfaz actualizada.');
+            showToast('Ajustes guardados en la nube.');
         }
 
         document.addEventListener('click', (e) => {
             if(e.target.id !== 'ev-name') {
                 document.getElementById('autocomplete-list').classList.add('hidden');
             }
+        });
+
+        Object.assign(window, {
+            openModal, closeModal, toggleView, changeDate, goToday, changeMiniMonth, goToWeekFromMini,
+            handleSlotClick, handleMonthDayClick, saveEvent, openEventCard, editEventFromAction, deleteEventFromAction,
+            sendWAFromAction, openDayActionModal, toggleHoliday, sendBulkWA, openCustomRangeModal, saveCustomRange,
+            filterContacts, updateContactsList, deleteContact, toggleDarkMode, clearBackground, updateOpacity, saveSettings
         });
     </script>
 </body>
