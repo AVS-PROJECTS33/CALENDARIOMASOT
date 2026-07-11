@@ -56,10 +56,13 @@
     <!-- Fondo Dinámico -->
     <div id="bg-layer" class="bg-custom-image hidden"></div>
 
-    <div id="app-container" class="flex h-full w-full relative z-10 backdrop-blur-sm">
+    <div id="app-container" class="flex h-full w-full relative z-10 backdrop-blur-sm overflow-hidden">
         
+        <!-- Overlay oscuro para móvil -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"></div>
+
         <!-- Barra Lateral Estrecha -->
-        <aside class="w-52 border-r border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 flex flex-col backdrop-blur-md">
+        <aside id="sidebar" class="w-52 border-r border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 flex-col backdrop-blur-md fixed md:relative z-40 h-full shadow-2xl md:shadow-none transform -translate-x-full md:translate-x-0 transition-transform duration-300 flex">
             <div class="p-4 flex flex-col gap-4 h-full">
                 <!-- Botón de Contactos -->
                 <button onclick="openModal('contacts-modal')" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-2.5 rounded-xl font-semibold shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all text-sm flex items-center justify-center gap-2">
@@ -90,20 +93,26 @@
 
         <main class="flex-1 flex flex-col relative h-full">
             <header class="h-16 shadow-sm border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 z-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1 md:gap-3">
+                    <!-- Hamburger Menu Mobile -->
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
                     <!-- Botón de Vista a la Izquierda -->
-                    <button id="view-toggle-btn" onclick="toggleView()" class="px-3 py-1.5 text-xs bg-primary hover:bg-primaryHover text-white rounded-lg font-semibold shadow-md transition-all active:scale-95 w-24 text-center">
+                    <button id="view-toggle-btn" onclick="toggleView()" class="px-2 md:px-3 py-1.5 text-[10px] md:text-xs bg-primary hover:bg-primaryHover text-white rounded-lg font-semibold shadow-md transition-all active:scale-95 w-20 md:w-24 text-center">
                         Vista: Semana
                     </button>
                     
                     <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
                     
-                    <button onclick="changeDate(-1)" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300">&lt;</button>
-                    <h2 id="current-date-display" class="text-lg font-bold text-gray-800 dark:text-gray-100 capitalize min-w-[180px] text-center"></h2>
-                    <button onclick="changeDate(1)" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300">&gt;</button>
-                    <button onclick="goToday()" class="ml-2 px-3 py-1 text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors font-medium">Hoy</button>
+                    <button onclick="changeDate(-1)" class="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300">&lt;</button>
+                    <h2 id="current-date-display" class="text-sm md:text-lg font-bold text-gray-800 dark:text-gray-100 capitalize min-w-[130px] md:min-w-[180px] text-center"></h2>
+                    <button onclick="changeDate(1)" class="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300">&gt;</button>
+                    <button onclick="goToday()" class="ml-1 md:ml-2 px-2 md:px-3 py-1 text-[10px] md:text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors font-medium">Hoy</button>
                 </div>
-                <div class="flex-1 flex justify-center pr-10">
+                <div class="flex-1 flex justify-center pr-2 md:pr-10 hidden lg:flex">
                     <span class="text-2xl font-title font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-blue-600 dark:from-indigo-400 dark:to-blue-400 tracking-widest drop-shadow-sm uppercase">CALENDARIO MASOT</span>
                 </div>
             </header>
@@ -317,6 +326,9 @@
 
         const views = ['day', 'week', 'month'];
         let currentViewIndex = 1; // 1 = week
+        if (window.innerWidth < 768) {
+            currentViewIndex = 0; // Default to 'day' on mobile
+        }
         let currentDate = new Date();
         let miniCalendarDate = new Date();
         
@@ -342,6 +354,12 @@
             populateTimeSelects();
             applySettings();
             generateSlots();
+            
+            // Sincronizar el texto del botón con la vista inicial
+            const btn = document.getElementById('view-toggle-btn');
+            const v = views[currentViewIndex];
+            if(btn) btn.innerText = `Vista: ${v === 'day' ? 'Día' : v === 'week' ? 'Semana' : 'Mes'}`;
+            
             renderCalendar();
             renderMiniCalendar();
             updateContactsList();
@@ -478,23 +496,21 @@
             const dayEvents = events.filter(e => e.dateStr === dateStr);
             
             let html = `
-                <div class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-x-auto overflow-y-hidden">
-                    <div class="min-w-[400px] md:min-w-0 flex flex-col h-full">
-                        <div class="flex border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                            <div class="w-12 border-r dark:border-gray-700 flex items-center justify-center text-xs font-bold text-gray-700 dark:text-gray-300">S${wNum}</div>
-                            <div class="flex-1 p-1 text-center cursor-pointer transition-all ${isToday && !isHoliday ? 'bg-indigo-600 text-white shadow-inner' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${isHoliday ? 'bg-red-500 text-white dark:bg-red-700' : ''}" onclick="openDayActionModal('${dateStr}')">
-                                <span class="font-bold block capitalize text-lg ${isToday && !isHoliday ? 'text-white' : ''}">${currentDate.toLocaleDateString('es-ES', {weekday:'long'})}</span>
-                                <span class="text-sm font-bold ${isToday && !isHoliday ? 'text-indigo-100' : (isHoliday ? 'text-red-100' : 'text-gray-500')}">${currentDate.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit'})}</span>
-                            </div>
+                <div class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700">
+                    <div class="flex border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                        <div class="w-12 border-r dark:border-gray-700 flex items-center justify-center text-xs font-bold text-gray-700 dark:text-gray-300">S${wNum}</div>
+                        <div class="flex-1 p-1 text-center cursor-pointer transition-all ${isToday && !isHoliday ? 'bg-indigo-600 text-white shadow-inner' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${isHoliday ? 'bg-red-500 text-white dark:bg-red-700' : ''}" onclick="openDayActionModal('${dateStr}')">
+                            <span class="font-bold block capitalize text-lg ${isToday && !isHoliday ? 'text-white' : ''}">${currentDate.toLocaleDateString('es-ES', {weekday:'long'})}</span>
+                            <span class="text-sm font-bold ${isToday && !isHoliday ? 'text-indigo-100' : (isHoliday ? 'text-red-100' : 'text-gray-500')}">${currentDate.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit'})}</span>
                         </div>
-                        <div class="flex-1 flex overflow-y-auto overflow-x-hidden">
-                            <div class="w-12 border-r dark:border-gray-700 flex flex-col">
-                                ${slots.map(time => `<div class="flex-1 border-b dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-center min-h-[1.5rem]">${time}</div>`).join('')}
-                            </div>
-                            <div class="flex-1 flex flex-col relative ${isHoliday ? 'bg-red-100 dark:bg-red-900/30' : ''}">
-                                ${slots.map(time => `<div class="flex-1 border-b dark:border-gray-700 border-dashed min-h-[1.5rem] ${!isHoliday ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : ''}" ${!isHoliday ? `onclick="handleSlotClick(event, '${dateStr}', '${time}')"` : ''}></div>`).join('')}
-                                ${generateEventsHTML(dayEvents)}
-                            </div>
+                    </div>
+                    <div class="flex-1 flex overflow-hidden">
+                        <div class="w-12 border-r dark:border-gray-700 flex flex-col">
+                            ${slots.map(time => `<div class="flex-1 border-b dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-center min-h-[1.5rem]">${time}</div>`).join('')}
+                        </div>
+                        <div class="flex-1 flex flex-col relative ${isHoliday ? 'bg-red-100 dark:bg-red-900/30' : ''}">
+                            ${slots.map(time => `<div class="flex-1 border-b dark:border-gray-700 border-dashed min-h-[1.5rem] ${!isHoliday ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : ''}" ${!isHoliday ? `onclick="handleSlotClick(event, '${dateStr}', '${time}')"` : ''}></div>`).join('')}
+                            ${generateEventsHTML(dayEvents)}
                         </div>
                     </div>
                 </div>`;
@@ -508,10 +524,9 @@
 
             const wNum = getWeekNumber(startOfWeek);
             
-            let html = `<div class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-x-auto overflow-y-hidden">
-                <div class="min-w-[800px] lg:min-w-0 flex flex-col h-full">
-                    <div class="flex border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        <div class="w-10 md:w-12 border-r dark:border-gray-700 flex items-center justify-center text-xs font-bold text-gray-700 dark:text-gray-300">S${wNum}</div>`;
+            let html = `<div class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700">
+                <div class="flex border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <div class="w-10 md:w-12 border-r dark:border-gray-700 flex items-center justify-center text-xs font-bold text-gray-700 dark:text-gray-300">S${wNum}</div>`;
             
             const weekDates = [];
             for(let i=0; i<7; i++) {
@@ -522,12 +537,12 @@
                 const isToday = dStr === new Date().toISOString().split('T')[0];
                 const isHoliday = holidays.includes(dStr);
                 html += `
-                        <div class="flex-1 p-2 text-center border-r dark:border-gray-700 last:border-0 cursor-pointer transition-all ${isToday && !isHoliday ? 'bg-indigo-600 text-white shadow-md transform scale-[1.02] z-10 border-b-4 border-indigo-800' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${isHoliday ? 'bg-red-500 text-white dark:bg-red-700' : ''}" onclick="openDayActionModal('${dStr}')">
-                            <span class="block text-sm font-bold uppercase ${isToday && !isHoliday ? 'text-indigo-100' : 'opacity-80'}">${d.toLocaleDateString('es-ES', {weekday:'short'})}</span>
-                            <span class="text-base font-extrabold ${isToday && !isHoliday ? 'text-white text-lg' : ''}">${d.getDate()}</span>
-                        </div>`;
+                    <div class="flex-1 p-2 text-center border-r dark:border-gray-700 last:border-0 cursor-pointer transition-all ${isToday && !isHoliday ? 'bg-indigo-600 text-white shadow-md transform scale-[1.02] z-10 border-b-4 border-indigo-800' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${isHoliday ? 'bg-red-500 text-white dark:bg-red-700' : ''}" onclick="openDayActionModal('${dStr}')">
+                        <span class="block text-sm font-bold uppercase ${isToday && !isHoliday ? 'text-indigo-100' : 'opacity-80'}">${d.toLocaleDateString('es-ES', {weekday:'short'})}</span>
+                        <span class="text-base font-extrabold ${isToday && !isHoliday ? 'text-white text-lg' : ''}">${d.getDate()}</span>
+                    </div>`;
             }
-            html += `</div><div class="flex-1 flex overflow-y-auto overflow-x-hidden">
+            html += `</div><div class="flex-1 flex overflow-hidden">
                 <div class="w-10 md:w-12 border-r dark:border-gray-700 flex flex-col">`;
             slots.forEach(time => {
                 html += `<div class="flex-1 border-b dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-center min-h-[1.5rem] py-0">${time}</div>`;
@@ -547,7 +562,7 @@
                 html += `</div>`;
             });
 
-            html += `</div></div></div>`;
+            html += `</div></div>`;
             container.innerHTML = html;
         }
 
@@ -596,12 +611,11 @@
             iterDate.setDate(iterDate.getDate() - startDay);
             
             let html = `
-                <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700 overflow-x-auto overflow-y-hidden">
-                    <div class="min-w-[700px] lg:min-w-0 flex flex-col h-full">
-                        <div class="grid grid-cols-7 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-center text-xs font-bold py-2 text-gray-500">
-                            <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
-                        </div>
-                        <div class="flex-1 grid grid-cols-7 grid-rows-6 overflow-y-auto overflow-x-hidden">
+                <div class="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow border dark:border-gray-700">
+                    <div class="grid grid-cols-7 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 text-center text-xs font-bold py-2 text-gray-500">
+                        <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+                    </div>
+                    <div class="flex-1 grid grid-cols-7 grid-rows-6">
             `;
             
             for (let i = 0; i < 42; i++) {
@@ -1015,6 +1029,18 @@
             showToast('Ajustes guardados en la nube.');
         }
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
         document.addEventListener('click', (e) => {
             if(e.target.id !== 'ev-name') {
                 document.getElementById('autocomplete-list').classList.add('hidden');
@@ -1025,7 +1051,8 @@
             openModal, closeModal, toggleView, changeDate, goToday, changeMiniMonth, goToWeekFromMini,
             handleSlotClick, handleMonthDayClick, saveEvent, openEventCard, editEventFromAction, deleteEventFromAction,
             sendWAFromAction, openDayActionModal, toggleHoliday, sendBulkWA, openCustomRangeModal, saveCustomRange,
-            filterContacts, updateContactsList, deleteContact, toggleDarkMode, clearBackground, updateOpacity, saveSettings
+            filterContacts, updateContactsList, deleteContact, toggleDarkMode, clearBackground, updateOpacity, saveSettings,
+            toggleSidebar
         });
     </script>
 </body>
