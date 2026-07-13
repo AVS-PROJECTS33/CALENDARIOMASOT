@@ -205,9 +205,9 @@
                 <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border dark:border-gray-700">
                     <h4 class="font-bold text-lg mb-2 text-primary">📅 Las Vistas (Día, Semana, Mes)</h4>
                     <ul class="list-disc pl-5 space-y-1">
-                        <li><strong>Vista Día y Semana:</strong> Puedes hacer clic en cualquier recuadro horario libre para <strong>crear un nuevo evento</strong>. Si haces clic en la cabecera de un día específico (donde pone el número del día), se abrirán las <strong>Opciones Rápidas</strong> (bloquear franjas, enviar WhatsApp masivos o marcar festivos).</li>
+                        <li><strong>Vista Día y Semana:</strong> Puedes hacer clic en cualquier recuadro horario libre para <strong>crear un nuevo evento</strong>. Si haces clic en la cabecera de un día específico, se abrirán las <strong>Opciones Rápidas</strong> (bloquear franjas, enviar recordatorios masivos o marcar festivos). La cuadrícula tiene <strong>filas intercaladas (blanco/gris)</strong> para guiar la vista fácilmente.</li>
                         <li><strong>Vista Mes:</strong> Muestra un resumen general. Haz clic en cualquier recuadro de un día para ir rápidamente a su vista detallada.</li>
-                        <li><strong>Zoom:</strong> El panel "🔍 Zoom" de la izquierda ajusta el tamaño visual para mostrarte más o menos horas en pantalla.</li>
+                        <li><strong>Zoom:</strong> El panel "🔍 Zoom" de la barra lateral ajusta el tamaño visual para mostrarte más o menos horas en pantalla.</li>
                     </ul>
                 </div>
 
@@ -215,15 +215,16 @@
                     <h4 class="font-bold text-lg mb-2 text-primary">📝 Crear y Editar Eventos</h4>
                     <ul class="list-disc pl-5 space-y-1">
                         <li>Al agendar una cita, los datos se guardan en tus <strong>Contactos</strong> automáticamente. Si el paciente ya existe, al escribir su nombre <strong>se autocompletará</strong>.</li>
-                        <li>Para <strong>Editar o Eliminar</strong>, haz clic sobre el evento en el calendario. Allí también podrás enviarle un WhatsApp. Al pulsar "✏️ Editar", la aplicación <strong>solo</strong> te permite modificar las <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-1 rounded font-bold">Observaciones</span>. Aparecerá un <span class="inline-flex items-center justify-center w-4 h-4 bg-yellow-400 text-yellow-900 rounded-full text-[10px] font-black border border-yellow-500 align-text-bottom shadow-sm">!</span> si has escrito notas.</li>
+                        <li>Para <strong>Editar o Eliminar</strong>, haz clic sobre el evento en el calendario. Allí también podrás enviarle un <strong>Recordatorio</strong> por WhatsApp. Al pulsar "✏️ Editar", la aplicación <strong>solo</strong> te permite modificar las <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-1 rounded font-bold">Observaciones</span>. Aparecerá un <span class="inline-flex items-center justify-center w-4 h-4 bg-yellow-400 text-yellow-900 rounded-full text-[10px] font-black border border-yellow-500 align-text-bottom shadow-sm">!</span> si has escrito notas.</li>
                     </ul>
                 </div>
 
                 <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border dark:border-gray-700">
-                    <h4 class="font-bold text-lg mb-2 text-primary">💬 Contactos y Ajustes</h4>
+                    <h4 class="font-bold text-lg mb-2 text-primary">🛠️ Contactos, Ajustes y Registros</h4>
                     <ul class="list-disc pl-5 space-y-1">
-                        <li><strong>Contactos:</strong> Puedes buscar, editar teléfonos o nombres, y eliminarlos por completo de la base de datos (te pedirá doble confirmación por seguridad).</li>
-                        <li><strong>Ajustes:</strong> Aquí defines tu jornada (Hora Inicio, Hora Fin) y tu <strong>Descanso</strong>, que se pintará de lila y no dejará agendar citas ahí. También configuras la plantilla de <strong>WhatsApp</strong> con <code>{fecha}</code> y <code>{hora}</code>. Todo queda guardado de forma permanente en la nube y puedes activar el <strong>Modo Oscuro</strong> o subir tu propio fondo.</li>
+                        <li><strong>Contactos:</strong> Busca, edita o elimina pacientes. Aparecerá una doble confirmación antes de borrarlos para evitar errores.</li>
+                        <li><strong>Registro de Visitas:</strong> Un botón rápido para contar <strong>automáticamente</strong> cuántas citas (con paciente y teléfono) has tenido en un mes, ignorando festivos y franjas bloqueadas.</li>
+                        <li><strong>Ajustes:</strong> Organizados por <em>Aspecto Visual</em> (Interruptor de Modo Oscuro, fondo), <em>Horarios</em> (Hora Inicio/Fin, Descanso e <strong>interruptor para mostrar/ocultar Fines de Semana</strong>) y <em>Comunicación</em> (Mensaje automático de WhatsApp).</li>
                     </ul>
                 </div>
             </div>
@@ -604,6 +605,10 @@
         let actionEventId = null;
         let selectedDateForAction = null;
 
+        function getLocalISODate(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
         window.onload = async () => {
             try {
                 const docRef = doc(db, 'app_data', 'main');
@@ -763,8 +768,8 @@
         }
 
         function renderDayView(container) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            const dateStr = getLocalISODate(currentDate);
+            const isToday = dateStr === getLocalISODate(new Date());
             const isHoliday = holidays.includes(dateStr);
             const wNum = getWeekNumber(currentDate);
             const dayEvents = events.filter(e => e.dateStr === dateStr);
@@ -808,8 +813,8 @@
                 const d = new Date(startOfWeek);
                 d.setDate(d.getDate() + i);
                 weekDates.push(d);
-                const dStr = d.toISOString().split('T')[0];
-                const isToday = dStr === new Date().toISOString().split('T')[0];
+                const dStr = getLocalISODate(d);
+                const isToday = dStr === getLocalISODate(new Date());
                 const isHoliday = holidays.includes(dStr);
                 html += `
                     <div class="flex-1 p-2 text-center border-r dark:border-gray-700 last:border-0 cursor-pointer transition-all ${isToday && !isHoliday ? 'bg-indigo-600 text-white shadow-md transform scale-[1.02] z-10 border-b-4 border-indigo-800' : 'hover:bg-gray-100 dark:hover:bg-gray-700'} ${isHoliday ? 'bg-red-500 text-white dark:bg-red-700' : ''}" onclick="openDayActionModal('${dStr}')">
@@ -825,7 +830,7 @@
             html += `</div>`;
 
             weekDates.forEach(d => {
-                const dStr = d.toISOString().split('T')[0];
+                const dStr = getLocalISODate(d);
                 const isHoliday = holidays.includes(dStr);
                 const dayEvents = events.filter(e => e.dateStr === dStr);
 
@@ -900,7 +905,7 @@
                     continue;
                 }
                 const isCurrentMonth = iterDate.getMonth() === month;
-                const dStr = iterDate.toISOString().split('T')[0];
+                const dStr = getLocalISODate(iterDate);
                 const dayEvs = events.filter(e => e.dateStr === dStr);
                 const isHoliday = holidays.includes(dStr);
 
@@ -1127,7 +1132,8 @@
 
         function openDayActionModal(dateStr) {
             selectedDateForAction = dateStr;
-            const formatDate = new Date(dateStr).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+            const [y, m, d] = dateStr.split('-');
+            const formatDate = new Date(y, m - 1, d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
             document.getElementById('day-action-title').innerText = `Opciones: ${formatDate}`;
             openModal('day-action-modal');
         }
@@ -1430,11 +1436,13 @@
             let count = 0;
             events.forEach(ev => {
                 const parts = ev.dateStr.split('-');
-                if(parts.length === 3) {
+                if (parts.length === 3) {
                     const evY = parseInt(parts[0]);
                     const evM = parseInt(parts[1]) - 1; // JS months are 0-indexed
                     if (evY === y && evM === m) {
-                        if (ev.name && ev.name.trim() !== '' && ev.phone && ev.phone.trim() !== '') {
+                        const isHoliday = holidays.includes(ev.dateStr);
+                        const isVisible = slots.indexOf(ev.timeStr) !== -1;
+                        if (!isHoliday && isVisible && ev.name && ev.name.trim() !== '' && ev.phone && ev.phone.trim() !== '') {
                             count++;
                         }
                     }
