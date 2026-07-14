@@ -1123,10 +1123,19 @@
         }
 
         // --- STREAMING_CHUNK:Day Action Features ---
+        function formatWADate(dateStr) {
+            const [y, m, d] = dateStr.split('-');
+            const date = new Date(y, m - 1, d);
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const dayName = days[date.getDay()];
+            const shortYear = y.substring(2);
+            return `${dayName} ${parseInt(d)}/${parseInt(m)}/${shortYear}`;
+        }
+
         function sendWAFromAction() {
             const ev = events.find(e => e.id === actionEventId);
             if (!ev || !ev.phone) return showToast('No hay teléfono registrado', 'error');
-            let text = settings.waMessage.replace('{fecha}', ev.dateStr).replace('{hora}', ev.timeStr);
+            let text = settings.waMessage.replace('{fecha}', formatWADate(ev.dateStr)).replace('{hora}', ev.timeStr);
             window.open(`https://wa.me/${ev.phone.replace(/\+/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
         }
 
@@ -1157,7 +1166,7 @@
             if (dayEvents.length === 0) return showToast('No hay eventos con teléfono para hoy.', 'error');
 
             dayEvents.forEach(ev => {
-                let text = settings.waMessage.replace('{fecha}', ev.dateStr).replace('{hora}', ev.timeStr);
+                let text = settings.waMessage.replace('{fecha}', formatWADate(ev.dateStr)).replace('{hora}', ev.timeStr);
                 window.open(`https://wa.me/${ev.phone.replace(/\+/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
             });
             closeModal('day-action-modal');
