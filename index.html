@@ -150,6 +150,12 @@
                 </div>
 
                 <div class="mt-auto flex flex-col gap-3">
+                    <!-- Tarjeta de Enlace Reservas -->
+                    <button onclick="copyBookingLink()"
+                        class="w-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 py-2 rounded-xl font-bold shadow-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition-all text-sm flex items-center justify-center gap-2 border border-red-200 dark:border-red-700">
+                        <span class="text-lg">🔗</span> Enlace Reservas
+                    </button>
+
                     <!-- Tarjeta de Información -->
                     <button onclick="openModal('info-modal')"
                         class="w-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 py-2 rounded-xl font-bold shadow-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all text-sm flex items-center justify-center gap-2 border border-emerald-200 dark:border-emerald-700">
@@ -1883,8 +1889,19 @@
             renderEventTypeSelector(color);
         }
 
+        function copyBookingLink() {
+            const bookingUrl = 'https://reservas-masot.vercel.app/';
+            
+            navigator.clipboard.writeText(bookingUrl).then(() => {
+                showToast('¡Enlace de reservas copiado al portapapeles!');
+            }).catch(err => {
+                console.error('Error al copiar: ', err);
+                showToast('Error al copiar el enlace', 'error');
+            });
+        }
+
         Object.assign(window, {
-            openLegendModal, addLegendColor, updateLegendColor, deleteLegendColor, selectEventType, selectSplit,
+            openLegendModal, addLegendColor, updateLegendColor, deleteLegendColor, selectEventType, selectSplit, copyBookingLink,
             openModal, closeModal, toggleView, changeDate, goToday, changeMiniMonth, goToWeekFromMini,
             handleSlotClick, handleMonthDayClick, saveEvent, openEventCard, editEventFromAction, deleteEventFromAction,
             sendWAFromAction, openDayActionModal, toggleHoliday, sendBulkWA, openCustomRangeModal, saveCustomRange,
