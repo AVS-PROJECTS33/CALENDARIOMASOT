@@ -1274,6 +1274,13 @@
 
             if (!name) return showToast('El nombre o evento es obligatorio', 'error');
             if (!isPersonalizado && !phone) return showToast('El número de teléfono es obligatorio', 'error');
+            
+            if (phone) {
+                const phoneRegex = /^[0-9]{9}$/;
+                if (!phoneRegex.test(phone)) {
+                    return showToast('Solo puedes introducir un número de teléfono de 9 cifras', 'error');
+                }
+            }
 
             const interval = parseInt(settings.interval);
             const halfInterval = interval / 2;
