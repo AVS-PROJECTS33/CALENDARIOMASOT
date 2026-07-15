@@ -357,6 +357,16 @@
                     </div>
                 </div>
 
+                <!-- Tarjeta: Seguridad -->
+                <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border dark:border-gray-700">
+                    <h4 class="font-bold text-sm text-primary mb-4 border-b dark:border-gray-700 pb-2 flex items-center gap-2">🔒 Seguridad</h4>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Contraseña de acceso</label>
+                        <p class="text-[10px] text-gray-500 mb-2">Protege la entrada al calendario.</p>
+                        <input type="text" id="app-password" class="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent">
+                    </div>
+                </div>
+
             </div>
             <div class="mt-6 flex justify-end gap-3">
                 <button onclick="closeModal('settings-modal')"
@@ -718,6 +728,22 @@
             renderCalendar();
             renderMiniCalendar();
             updateContactsList();
+
+            // Auto-refresh silencioso cada 1 minuto (60000 ms)
+            setInterval(async () => {
+                try {
+                    const docRef = doc(db, 'app_data', 'main');
+                    const snap = await getDoc(docRef);
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (data.events) events = data.events;
+                        if (data.holidays) holidays = data.holidays;
+                        renderCalendar();
+                    }
+                } catch (error) {
+                    console.error("Error en auto-refresh:", error);
+                }
+            }, 60000);
         };
 
         function populateTimeSelects() {
@@ -1613,7 +1639,10 @@
             setSelectVal('break-end', settings.breakEnd);
             setSelectVal('time-interval', settings.interval);
 
-            document.getElementById('wa-message').value = settings.waMessage;
+            document.getElementById('wa-message').value = settings.waMessage || 'Hola, te recuerdo tu cita el día {fecha} a las {hora}.';
+            if (document.getElementById('app-password')) {
+                document.getElementById('app-password').value = settings.password || 'laproteinamola';
+            }
         }
 
         function updateOpacity() {
@@ -1654,6 +1683,9 @@
             settings.breakEnd = document.getElementById('break-end').value;
             settings.interval = document.getElementById('time-interval').value;
             settings.waMessage = document.getElementById('wa-message').value;
+            if (document.getElementById('app-password')) {
+                settings.password = document.getElementById('app-password').value;
+            }
 
             const fileInput = document.getElementById('bg-image-upload');
             if (fileInput.files && fileInput.files[0]) {
@@ -1769,9 +1801,29 @@
         const btnGoToday = document.getElementById('btn-go-today');
         if (btnGoToday) btnGoToday.innerText = `Hoy (${todayStrLabel})`;
 
-        function checkPassword() {
-            const pwd = document.getElementById('login-password').value;
-            if (pwd === 'masot') {
+        async function checkPassword() {
+            const pwdInput = document.getElementById('login-password');
+            const pwd = pwdInput.value;
+            const btn = pwdInput.nextElementSibling;
+            
+            btn.disabled = true;
+            btn.innerText = 'Verificando...';
+
+            let correctPwd = 'laproteinamola';
+            try {
+                const docRef = doc(db, 'app_data', 'main');
+                const snap = await getDoc(docRef);
+                if (snap.exists() && snap.data().settings && snap.data().settings.password) {
+                    correctPwd = snap.data().settings.password;
+                }
+            } catch (err) {
+                console.error("Error validando contraseña en Firebase:", err);
+            }
+            
+            btn.disabled = false;
+            btn.innerText = 'Entrar al Calendario';
+
+            if (pwd === correctPwd) {
                 const overlay = document.getElementById('login-overlay');
                 overlay.classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => overlay.style.display = 'none', 500);
