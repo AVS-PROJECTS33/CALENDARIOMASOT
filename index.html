@@ -284,7 +284,18 @@
                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                             </label>
                         </div>
-
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Imagen de Fondo (Subir)</label>
+                            <input type="file" id="bg-image-upload" accept="image/*"
+                                class="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent">
+                            <button onclick="clearBackground()" class="mt-1 text-[10px] text-red-500 hover:underline">Quitar
+                                fondo actual</button>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Opacidad del panel (0 a 100)</label>
+                            <input type="range" id="bg-opacity" min="0" max="100" value="95" class="w-full cursor-pointer"
+                                oninput="updateOpacity()">
+                        </div>
                     </div>
                 </div>
 
@@ -428,7 +439,7 @@
                         class="w-full border-2 border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Observaciones <span class="text-xs text-gray-400 font-normal">(opcional)</span></label>
+                    <label class="block text-sm font-medium mb-1">Observaciones</label>
                     <textarea id="ev-obs" rows="2"
                         class="w-full border-2 border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"></textarea>
                 </div>
@@ -587,13 +598,37 @@
                     class="text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
             </div>
             <!-- Nuevo buscador añadido aquí -->
-            <div class="mb-3">
+            <div class="mb-3 flex gap-2">
                 <input type="text" id="contact-search-input" onkeyup="updateContactsList()"
                     placeholder="Buscar por nombre o teléfono..."
-                    class="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none">
+                    class="flex-1 border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none">
+                <button onclick="openModal('add-contact-modal')" class="bg-primary hover:bg-primaryHover text-white px-3 py-2 rounded text-sm font-bold shadow-sm transition-colors shrink-0" title="Añadir Contacto">
+                    + Añadir Contacto
+                </button>
             </div>
             <div class="flex-1 overflow-y-auto pr-2" id="contacts-list">
                 <!-- Inyectado por JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Añadir Contacto -->
+    <div id="add-contact-modal" class="fixed inset-0 bg-black/50 hidden z-[70] flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 relative">
+            <h3 class="text-lg font-bold mb-4">+ Añadir Contacto</h3>
+            <div class="space-y-3 relative">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre</label>
+                    <input type="text" id="new-contact-name" class="w-full border-2 border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Teléfono</label>
+                    <input type="tel" id="new-contact-phone" class="w-full border-2 border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <button onclick="closeModal('add-contact-modal')" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 rounded text-sm">Cancelar</button>
+                <button onclick="addNewContact()" class="px-3 py-1.5 bg-primary text-white rounded text-sm">Guardar</button>
             </div>
         </div>
     </div>
@@ -1154,9 +1189,8 @@
                     if (i === 0) return 0;
                     const [psh, psm] = slots[i-1].split(':').map(Number);
                     const prevMins = psh * 60 + psm;
-                    const step = parseInt(settings.interval);
-                    const fraction = (evMins - prevMins) / step;
-                    return (i - 1) + Math.min(fraction, 1);
+                    const fraction = (evMins - prevMins) / (slotMins - prevMins);
+                    return (i - 1) + fraction;
                 }
             }
             if (slots.length === 0) return 0;
@@ -1274,13 +1308,6 @@
 
             if (!name) return showToast('El nombre o evento es obligatorio', 'error');
             if (!isPersonalizado && !phone) return showToast('El número de teléfono es obligatorio', 'error');
-            
-            if (phone) {
-                const phoneRegex = /^[0-9]{9}$/;
-                if (!phoneRegex.test(phone)) {
-                    return showToast('Solo puedes introducir un número de teléfono de 9 cifras', 'error');
-                }
-            }
 
             const interval = parseInt(settings.interval);
             const halfInterval = interval / 2;
@@ -1604,6 +1631,28 @@
             }
         }
 
+        function addNewContact() {
+            const name = document.getElementById('new-contact-name').value.trim();
+            const phone = document.getElementById('new-contact-phone').value.trim();
+
+            if (name !== '' && phone !== '') {
+                const exist = contacts.find(c => c.name.toLowerCase() === name.toLowerCase());
+                if (exist) {
+                    showToast('Ya existe un contacto con este nombre', 'error');
+                } else {
+                    contacts.push({ name, phone });
+                    document.getElementById('new-contact-name').value = '';
+                    document.getElementById('new-contact-phone').value = '';
+                    saveState();
+                    updateContactsList();
+                    closeModal('add-contact-modal');
+                    showToast('Contacto añadido correctamente');
+                }
+            } else {
+                showToast('Debes introducir nombre y teléfono', 'error');
+            }
+        }
+
         // --- STREAMING_CHUNK:Settings & Background Image ---
         function applySettings() {
             if (settings.darkMode) document.documentElement.classList.add('dark');
@@ -1612,13 +1661,21 @@
             const bgLayer = document.getElementById('bg-layer');
             const app = document.getElementById('app-container');
 
-            bgLayer.classList.add('hidden');
-            app.style.backgroundColor = '';
+            if (settings.bgUrl) {
+                bgLayer.style.backgroundImage = `url('${settings.bgUrl}')`;
+                bgLayer.classList.remove('hidden');
+                const alpha = settings.opacity / 100;
+                app.style.backgroundColor = settings.darkMode ? `rgba(31, 41, 55, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+            } else {
+                bgLayer.classList.add('hidden');
+                app.style.backgroundColor = '';
+            }
 
             document.getElementById('dark-mode-toggle').checked = settings.darkMode;
             if (document.getElementById('show-weekends-toggle')) {
                 document.getElementById('show-weekends-toggle').checked = settings.showWeekends !== false;
             }
+            document.getElementById('bg-opacity').value = settings.opacity;
 
             // Set Select values safely
             const setSelectVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
@@ -1634,6 +1691,14 @@
             }
         }
 
+        function updateOpacity() {
+            const val = document.getElementById('bg-opacity').value;
+            const app = document.getElementById('app-container');
+            const isDark = document.documentElement.classList.contains('dark');
+            const alpha = val / 100;
+            app.style.backgroundColor = isDark ? `rgba(31, 41, 55, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+        }
+
         function toggleDarkMode() {
             settings.darkMode = document.getElementById('dark-mode-toggle').checked;
             applySettings();
@@ -1646,7 +1711,15 @@
             renderMiniCalendar();
         }
 
+        function clearBackground() {
+            settings.bgUrl = '';
+            document.getElementById('bg-image-upload').value = '';
+            applySettings();
+            showToast('Fondo eliminado');
+        }
+
         function saveSettings() {
+            settings.opacity = document.getElementById('bg-opacity').value;
             if (document.getElementById('show-weekends-toggle')) {
                 settings.showWeekends = document.getElementById('show-weekends-toggle').checked;
             }
@@ -1660,7 +1733,34 @@
                 settings.password = document.getElementById('app-password').value;
             }
 
-            finalizeSave();
+            const fileInput = document.getElementById('bg-image-upload');
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                // Compresor de imagen invisible para evitar reventar el LocalStorage
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1920; const MAX_HEIGHT = 1080;
+                        let width = img.width; let height = img.height;
+
+                        if (width > height && width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        else if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+
+                        canvas.width = width; canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+                        settings.bgUrl = canvas.toDataURL('image/jpeg', 0.6); // comprime
+                        finalizeSave();
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                finalizeSave();
+            }
         }
 
         async function finalizeSave() {
@@ -1903,7 +2003,7 @@
             openModal, closeModal, toggleView, changeDate, goToday, changeMiniMonth, goToWeekFromMini,
             handleSlotClick, handleMonthDayClick, saveEvent, openEventCard, editEventFromAction, deleteEventFromAction,
             sendWAFromAction, openDayActionModal, toggleHoliday, sendBulkWA, openCustomRangeModal, saveCustomRange,
-            filterContacts, updateContactsList, deleteContact, editContact, saveEditContact, toggleDarkMode, toggleWeekends, saveSettings,
+            filterContacts, updateContactsList, deleteContact, editContact, saveEditContact, addNewContact, toggleDarkMode, toggleWeekends, clearBackground, updateOpacity, saveSettings,
             openVisitsModal, calculateVisits, toggleSidebar, changeZoom, checkPassword
         });
     </script>
