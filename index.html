@@ -21,6 +21,8 @@
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -86,7 +88,7 @@
         </div>
     </div>
     <script>
-        if (sessionStorage.getItem('masot_logged_in') === 'true') {
+        if (localStorage.getItem('masot_logged_in') === 'true') {
             document.getElementById('login-overlay').style.display = 'none';
         }
     </script>
@@ -175,9 +177,9 @@
             <header
                 class="h-16 shadow-sm border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 z-10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md">
                 <div class="flex items-center gap-1 md:gap-3">
-                    <!-- Hamburger Menu Mobile -->
+                    <!-- Hamburger Menu Mobile / Desktop Toggle -->
                     <button onclick="toggleSidebar()"
-                        class="md:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg">
+                        class="p-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-lg shadow-sm transition-colors border border-indigo-200 dark:border-indigo-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -202,12 +204,12 @@
                     <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1"></div>
 
                     <button onclick="changeDate(-1)"
-                        class="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300">&lt;</button>
+                        class="p-1.5 md:p-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-full shadow-sm transition-colors border border-indigo-200 dark:border-indigo-700 font-bold">&lt;</button>
                     <h2 id="current-date-display"
                         class="text-sm md:text-lg font-bold text-gray-800 dark:text-gray-100 capitalize min-w-[130px] md:min-w-[180px] text-center">
                     </h2>
                     <button onclick="changeDate(1)"
-                        class="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-600 dark:text-gray-300">&gt;</button>
+                        class="p-1.5 md:p-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800 rounded-full shadow-sm transition-colors border border-indigo-200 dark:border-indigo-700 font-bold">&gt;</button>
                     <button id="btn-go-today" onclick="goToday()"
                         class="ml-1 md:ml-2 px-2 md:px-3 py-1 text-[10px] md:text-xs bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors font-medium">Hoy</button>
                 </div>
@@ -238,7 +240,7 @@
                     <ul class="list-disc pl-5 space-y-1">
                         <li><strong>Vista Día y Semana:</strong> Puedes hacer clic en cualquier recuadro horario libre para <strong>crear un nuevo evento</strong>. Si haces clic en la cabecera de un día específico, se abrirán las <strong>Opciones Rápidas</strong> (bloquear franjas, enviar recordatorios masivos o marcar festivos). La cuadrícula tiene <strong>filas intercaladas (blanco/gris)</strong> para guiar la vista fácilmente.</li>
                         <li><strong>Vista Mes:</strong> Muestra un resumen general. Haz clic en cualquier recuadro de un día para ir rápidamente a su vista detallada.</li>
-                        <li><strong>Zoom:</strong> El panel "🔍 Zoom" de la barra lateral ajusta el tamaño visual para mostrarte más o menos horas en pantalla.</li>
+                        <li><strong>Zoom e Interfaz:</strong> El panel "🔍 Zoom" de la barra lateral ajusta el tamaño visual. Usa el botón de menú superior (tres líneas) para <strong>ocultar o mostrar la barra lateral</strong> y tener más espacio.</li>
                     </ul>
                 </div>
 
@@ -253,9 +255,9 @@
                 <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border dark:border-gray-700">
                     <h4 class="font-bold text-lg mb-2 text-primary">🛠️ Contactos, Ajustes y Registros</h4>
                     <ul class="list-disc pl-5 space-y-1">
-                        <li><strong>Contactos:</strong> Busca, edita o elimina pacientes. Aparecerá una doble confirmación antes de borrarlos para evitar errores.</li>
+                        <li><strong>Contactos:</strong> Busca, edita o elimina pacientes. Ahora también puedes <strong>Añadir Contactos manualmente</strong> sin crear una cita. Aparecerá una doble confirmación antes de borrarlos para evitar errores.</li>
                         <li><strong>Registro de Visitas:</strong> Un botón rápido para contar <strong>automáticamente</strong> cuántas citas (con paciente y teléfono) has tenido en un mes, ignorando festivos y franjas bloqueadas.</li>
-                        <li><strong>Ajustes:</strong> Organizados por <em>Aspecto Visual</em> (Interruptor de Modo Oscuro, fondo), <em>Horarios</em> (Hora Inicio/Fin, Descanso e <strong>interruptor para mostrar/ocultar Fines de Semana</strong>) y <em>Comunicación</em> (Mensaje automático de WhatsApp).</li>
+                        <li><strong>Ajustes:</strong> Organizados por <em>Aspecto Visual</em>, <em>Horarios</em> y <em>Comunicación</em>. Además, ahora puedes <strong>Exportar e Importar contactos (.vcf)</strong>. Tu sesión se guardará en tu navegador para no introducir la contraseña siempre.</li>
                     </ul>
                 </div>
             </div>
@@ -353,6 +355,16 @@
                         <label class="block text-sm font-medium mb-1">Contraseña de acceso</label>
                         <p class="text-[10px] text-gray-500 mb-2">Protege la entrada al calendario.</p>
                         <input type="text" id="app-password" class="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent">
+                    </div>
+                </div>
+
+                <!-- Tarjeta: Gestión de Contactos -->
+                <div class="p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border dark:border-gray-700">
+                    <h4 class="font-bold text-sm text-primary mb-4 border-b dark:border-gray-700 pb-2 flex items-center gap-2">👥 Gestión de Contactos</h4>
+                    <div class="flex gap-2">
+                        <button onclick="exportContactsVCF()" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-blue-700 transition-colors">Exportar VCF</button>
+                        <button onclick="document.getElementById('import-vcf-file').click()" class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-green-700 transition-colors">Importar VCF</button>
+                        <input type="file" id="import-vcf-file" accept=".vcf" class="hidden" onchange="importContactsVCF(event)">
                     </div>
                 </div>
 
@@ -478,7 +490,7 @@
 
     <!-- Modal Registro Visitas -->
     <div id="visits-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 relative">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg p-6 relative">
             <button onclick="closeModal('visits-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
             <h3 class="text-xl font-bold mb-4 text-purple-700 dark:text-purple-400">📊 Registro de Visitas</h3>
             
@@ -509,15 +521,26 @@
                     </div>
                 </div>
 
-                <div class="p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700 text-center">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total de visitas:</p>
-                    <p class="text-[10px] text-gray-500 mb-2">(Con nombre y número)</p>
-                    <p id="visit-total" class="text-5xl font-black text-purple-700 dark:text-purple-400 mt-2">0</p>
+                <div class="p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg border border-purple-200 dark:border-purple-700 text-center flex flex-col max-h-[70vh]">
+                    <div id="visit-breakdown" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 overflow-y-auto p-1">
+                        <!-- Inyectado por JS -->
+                    </div>
+                    <div class="border-t border-purple-200 dark:border-purple-700/50 pt-4 mt-auto">
+                        <p class="text-base font-bold text-gray-700 dark:text-gray-300">Total general del mes:</p>
+                        <p class="text-[11px] text-gray-500 mb-2">(Con nombre y número)</p>
+                        <p id="visit-total" class="text-6xl font-black text-purple-700 dark:text-purple-400 mt-2">0</p>
+                    </div>
                 </div>
             </div>
             
-            <div class="mt-6 flex justify-end">
-                <button onclick="closeModal('visits-modal')" class="px-5 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg text-sm font-medium transition-colors">Cerrar</button>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeModal('visits-modal')" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg text-sm font-medium transition-colors">Cerrar</button>
+                <button onclick="exportVisitsPDF()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    PDF
+                </button>
             </div>
         </div>
     </div>
@@ -587,13 +610,40 @@
                     class="text-gray-500 hover:text-red-500 text-xl font-bold">&times;</button>
             </div>
             <!-- Nuevo buscador añadido aquí -->
-            <div class="mb-3">
+            <div class="mb-3 flex gap-2">
                 <input type="text" id="contact-search-input" onkeyup="updateContactsList()"
                     placeholder="Buscar por nombre o teléfono..."
-                    class="w-full border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none">
+                    class="flex-1 border dark:border-gray-600 rounded px-3 py-2 text-sm bg-transparent focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-800 outline-none">
+                <button onclick="openAddContactModal()" class="bg-primary hover:bg-primaryHover text-white px-3 py-2 rounded text-sm font-bold shadow-sm whitespace-nowrap">+ Añadir Contacto</button>
             </div>
             <div class="flex-1 overflow-y-auto pr-2" id="contacts-list">
                 <!-- Inyectado por JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Añadir Contacto -->
+    <div id="add-contact-modal"
+        class="fixed inset-0 bg-black/50 hidden z-[70] flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 relative">
+            <h3 class="text-lg font-bold mb-4">Añadir Contacto</h3>
+            <div class="space-y-3 relative">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre</label>
+                    <input type="text" id="new-contact-name"
+                        class="w-full border-2 border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Teléfono</label>
+                    <input type="tel" id="new-contact-phone"
+                        class="w-full border-2 border-gray-300 dark:border-gray-500 rounded px-3 py-2 text-sm bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+                </div>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <button onclick="closeModal('add-contact-modal')"
+                    class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 rounded text-sm">Cancelar</button>
+                <button onclick="saveNewContact()"
+                    class="px-3 py-1.5 bg-primary text-white rounded text-sm">Guardar</button>
             </div>
         </div>
     </div>
@@ -1698,6 +1748,8 @@
             const m = parseInt(document.getElementById('visit-month').value);
             
             let count = 0;
+            let typeCounts = {};
+
             events.forEach(ev => {
                 const parts = ev.dateStr.split('-');
                 if (parts.length === 3) {
@@ -1708,23 +1760,136 @@
                         const isVisible = slots.indexOf(ev.timeStr) !== -1;
                         if (!isHoliday && isVisible && ev.name && ev.name.trim() !== '' && ev.phone && ev.phone.trim() !== '') {
                             count++;
+                            
+                            let typeName = 'Sin especificar';
+                            if (ev.color) {
+                                const lc = legendColors.find(l => l.color === ev.color);
+                                if (lc) typeName = lc.name;
+                            }
+                            if (!typeCounts[typeName]) typeCounts[typeName] = 0;
+                            typeCounts[typeName]++;
                         }
                     }
                 }
             });
             
             document.getElementById('visit-total').innerText = count;
+
+            const breakdownContainer = document.getElementById('visit-breakdown');
+            if (breakdownContainer) {
+                if (count === 0) {
+                    breakdownContainer.innerHTML = '<p class="text-center text-xs italic opacity-70">No hay visitas este mes.</p>';
+                } else {
+                    let html = '';
+                    for (const [type, num] of Object.entries(typeCounts)) {
+                        let colorHex = '#6b7280';
+                        const lc = legendColors.find(l => l.name === type);
+                        if (lc) colorHex = lc.color;
+                        
+                        html += `
+                        <div class="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center">
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${colorHex}"></span>
+                                <span class="font-bold text-xs text-gray-600 dark:text-gray-300 uppercase tracking-wide">${type}</span>
+                            </div>
+                            <span class="text-3xl font-black text-purple-600 dark:text-purple-400 mt-1">${num}</span>
+                        </div>`;
+                    }
+                    breakdownContainer.innerHTML = html;
+                }
+            }
+        }
+
+        function exportVisitsPDF() {
+            const y = parseInt(document.getElementById('visit-year').value);
+            const m = parseInt(document.getElementById('visit-month').value);
+            
+            let exportData = [];
+
+            events.forEach(ev => {
+                const parts = ev.dateStr.split('-');
+                if (parts.length === 3) {
+                    const evY = parseInt(parts[0]);
+                    const evM = parseInt(parts[1]) - 1; // JS months are 0-indexed
+                    if (evY === y && evM === m) {
+                        const isHoliday = holidays.includes(ev.dateStr);
+                        const isVisible = slots.indexOf(ev.timeStr) !== -1;
+                        if (!isHoliday && isVisible && ev.name && ev.name.trim() !== '' && ev.phone && ev.phone.trim() !== '') {
+                            let typeName = 'Sin especificar';
+                            if (ev.color) {
+                                const lc = legendColors.find(l => l.color === ev.color);
+                                if (lc) typeName = lc.name;
+                            }
+                            
+                            const dateObj = new Date(evY, evM, parseInt(parts[2]));
+                            const formattedDate = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                            exportData.push([
+                                ev.name,
+                                typeName,
+                                formattedDate,
+                                ev.timeStr
+                            ]);
+                        }
+                    }
+                }
+            });
+
+            if (exportData.length === 0) {
+                return showToast('No hay visitas para exportar en este mes', 'error');
+            }
+
+            // Ordenar por fecha y luego por hora
+            exportData.sort((a, b) => {
+                const dateA = a[2].split('/').reverse().join('');
+                const dateB = b[2].split('/').reverse().join('');
+                if (dateA === dateB) {
+                    return a[3].localeCompare(b[3]);
+                }
+                return dateA.localeCompare(dateB);
+            });
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            
+            doc.setFontSize(16);
+            doc.text(`Registro de Visitas - ${monthNames[m]} ${y}`, 14, 15);
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Total de visitas computadas: ${exportData.length}`, 14, 22);
+
+            doc.autoTable({
+                head: [['Cliente', 'Tipo de Visita', 'Fecha', 'Hora']],
+                body: exportData,
+                startY: 28,
+                theme: 'striped',
+                headStyles: { fillColor: [107, 33, 168] },
+                styles: { font: 'helvetica', fontSize: 9 }
+            });
+
+            doc.save(`Visitas_${monthNames[m]}_${y}.pdf`);
+            showToast('PDF generado correctamente');
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
+            if (window.innerWidth >= 768) {
+                if (sidebar.style.display === 'none') {
+                    sidebar.style.display = 'flex';
+                } else {
+                    sidebar.style.display = 'none';
+                }
             } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
             }
         }
 
@@ -1773,7 +1938,7 @@
                 const overlay = document.getElementById('login-overlay');
                 overlay.classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => overlay.style.display = 'none', 500);
-                sessionStorage.setItem('masot_logged_in', 'true');
+                localStorage.setItem('masot_logged_in', 'true');
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
                 document.getElementById('login-password').value = '';
@@ -1898,13 +2063,93 @@
             });
         }
 
+        function openAddContactModal() {
+            document.getElementById('new-contact-name').value = '';
+            document.getElementById('new-contact-phone').value = '';
+            openModal('add-contact-modal');
+        }
+
+        function saveNewContact() {
+            const name = document.getElementById('new-contact-name').value.trim();
+            const phone = document.getElementById('new-contact-phone').value.trim();
+            
+            if (name === '' || phone === '') {
+                return showToast('Completa todos los campos.', 'error');
+            }
+            
+            const exist = contacts.find(c => c.name.toLowerCase() === name.toLowerCase());
+            if (exist) {
+                return showToast('Ya existe un contacto con este nombre.', 'error');
+            }
+            
+            contacts.push({ name, phone });
+            saveState();
+            updateContactsList();
+            closeModal('add-contact-modal');
+            showToast('Contacto añadido correctamente');
+        }
+
+        function exportContactsVCF() {
+            if (contacts.length === 0) return showToast('No hay contactos para exportar', 'error');
+            let vcf = '';
+            contacts.forEach(c => {
+                vcf += 'BEGIN:VCARD\\nVERSION:3.0\\n';
+                vcf += `FN:${c.name}\\n`;
+                if (c.phone) vcf += `TEL;TYPE=CELL:${c.phone}\\n`;
+                vcf += 'END:VCARD\\n';
+            });
+            const blob = new Blob([vcf], { type: 'text/vcard' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'contactos_masot.vcf';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Contactos exportados');
+        }
+
+        function importContactsVCF(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const vcards = text.split('BEGIN:VCARD');
+                let added = 0;
+                vcards.forEach(vcard => {
+                    if (vcard.trim() === '') return;
+                    const fnMatch = vcard.match(/FN:(.*)/);
+                    const telMatch = vcard.match(/TEL.*:(.*)/);
+                    if (fnMatch) {
+                        const name = fnMatch[1].trim();
+                        const phone = telMatch ? telMatch[1].trim().replace(/[^0-9+]/g, '') : '';
+                        const exist = contacts.find(c => c.name.toLowerCase() === name.toLowerCase());
+                        if (!exist) {
+                            contacts.push({ name, phone });
+                            added++;
+                        }
+                    }
+                });
+                if (added > 0) {
+                    saveState();
+                    updateContactsList();
+                    showToast(`Se han importado ${added} contactos nuevos`);
+                } else {
+                    showToast('No se encontraron contactos nuevos', 'error');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
         Object.assign(window, {
             openLegendModal, addLegendColor, updateLegendColor, deleteLegendColor, selectEventType, selectSplit, copyBookingLink,
             openModal, closeModal, toggleView, changeDate, goToday, changeMiniMonth, goToWeekFromMini,
             handleSlotClick, handleMonthDayClick, saveEvent, openEventCard, editEventFromAction, deleteEventFromAction,
             sendWAFromAction, openDayActionModal, toggleHoliday, sendBulkWA, openCustomRangeModal, saveCustomRange,
             filterContacts, updateContactsList, deleteContact, editContact, saveEditContact, toggleDarkMode, toggleWeekends, saveSettings,
-            openVisitsModal, calculateVisits, toggleSidebar, changeZoom, checkPassword
+            openVisitsModal, calculateVisits, toggleSidebar, changeZoom, checkPassword,
+            openAddContactModal, saveNewContact, exportContactsVCF, importContactsVCF, exportVisitsPDF
         });
     </script>
 </body>
